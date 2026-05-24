@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.AES_pack.all;
-
+-- não mexa na declaracao da entidade!!!!!
 entity addRoundKey is
 
 	port(

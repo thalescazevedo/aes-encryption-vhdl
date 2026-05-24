@@ -7,14 +7,17 @@ package AES_pack is
 
     type matriz_4x4 is array(0 to 3, 0 to 3) of std_logic_vector(7 downto 0); -- matriz de 4x4 bytes (128 bits)(16 bytes)
 
-    function 128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4; -- funcao que converte o vetor para matriz,
+    function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4; -- funcao que converte o vetor para matriz,
         -- com a ressalva de que o preenchimento e feito por colunas
     
     function matriz_4x4_to_128bits(input: matriz_4x4) return std_logic_vector(127 downto 0);
 
 end package AES_pack;
 
-    function 128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4 is
+
+package body AES_pack is
+
+    function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4 is
         variable output : matriz_4x4;
     begin
         for i in 0 to 3 loop
@@ -24,8 +27,6 @@ end package AES_pack;
         end loop;
         return output;
     end function;
-
-
 
 
     function matriz_4x4_to_128bits(input: matriz_4x4) return std_logic_vector(127 downto 0) is
@@ -38,8 +39,5 @@ end package AES_pack;
         end loop;
         return output;
     end function;
-
-
-package body AES_pack is
 
 end package body AES_pack;

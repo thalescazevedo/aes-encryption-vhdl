@@ -37,7 +37,7 @@ architecture behavior of AES_BO is
 begin
 
     -- Primeiro passo: Colocar a primeira chave da rodada fazendo um xor entre user key e user text.
-    round0_cipher <= 128bits_to_matriz_4x4(user_key xor user_text);
+    round0_cipher <= vetor128bits_to_matriz_4x4(user_key xor user_text);
     
     SB: entity work.subBytes(behavior)
         port map (  in_matriz       => partial_cipher,
@@ -61,7 +61,7 @@ begin
                     y           => in_partial_cipher_addroundkey
         );
 
-    in_1_m2 <= 128bits_to_matriz_4x4(user_key);
+    in_1_m2 <= vetor128bits_to_matriz_4x4(user_key);
 
     M2: entity work.mux_2to1(behavior) -- mux pra definir se a entrada de keySchedule é a chave da rodada anterior a ou a do usuario
         port map (  sel         => i0, 
