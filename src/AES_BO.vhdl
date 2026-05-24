@@ -90,7 +90,7 @@ begin
         );
 
     M0: entity work.mux_2to1(behavior) -- determina se o parcial é o xor do usuario ou o calculado
-        port map (  sel         => i0, -- ESSE SIGNAL tem que ser negado no bc
+        port map (  sel         => i0,
                     in_0        => partial_cipher_addroundkey,
                     in_1        => round0_cipher,
                     y           => round_partial_cipher

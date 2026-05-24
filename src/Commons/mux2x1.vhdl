@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use work.AES_pack.all;
 
 entity mux_2to1 is
 	port(

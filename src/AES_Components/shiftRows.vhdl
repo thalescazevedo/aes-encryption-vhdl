@@ -7,7 +7,7 @@ entity shiftRows is
 
 	port(
         in_matriz  : in  matriz_4x4;
-        out_matriz : in  matriz_4x4
+        out_matriz : out  matriz_4x4
 	);
 end entity shiftRows;
 

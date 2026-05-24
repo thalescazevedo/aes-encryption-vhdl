@@ -8,7 +8,7 @@ entity addRoundKey is
 	port(
         in_matriz         : in  matriz_4x4;
         in_keySchedule    : in matriz_4x4;
-        out_matriz        : in  matriz_4x4
+        out_matriz        : out  matriz_4x4
 	);
 end entity addRoundKey;
 

@@ -7,7 +7,7 @@ entity mixColumns is
 
 	port(
         in_matriz  : in  matriz_4x4;
-        out_matriz : in  matriz_4x4
+        out_matriz : out  matriz_4x4
 	);
 end entity mixColumns;
 
@@ -18,4 +18,4 @@ begin
 
 
 
-end architecture mixColumns; 
+end architecture behavior; 
