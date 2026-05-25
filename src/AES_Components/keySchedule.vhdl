@@ -7,9 +7,9 @@ use work.roms_package.all; -- já está importando o pacote de roms
 entity keySchedule is
 
 	port(
-        in_matriz       : in  matriz_4x4;
+        in_matrix       : in  matriz_4x4;
         round_counter   : in std_logic_vector(3 downto 0);
-        out_matriz      : out  matriz_4x4
+        out_matrix      : out  matriz_4x4
 	);
 end entity keySchedule;
 
