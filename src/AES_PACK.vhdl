@@ -10,6 +10,16 @@ package AES_pack is
     function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4; -- funcao que converte o vetor para matriz,
         -- com a ressalva de que o preenchimento e feito por colunas
     
+    	function xtime(b : std_logic_vector(7 downto 0)) return std_logic_vector is -- funcao que multiplica por 2 e compara xor para evitar o overflow: nicolas que vai usar essa
+            variable result : std_logic_vector(7 downto 0);
+        begin
+            result := b(6 downto 0) & '0';
+            if b(7) = '1' then
+                result := result xor "00011011";
+            end if;
+            return result;
+        end function;
+    
     function matriz_4x4_to_128bits(input: matriz_4x4) return std_logic_vector(127 downto 0);
 
 end package AES_pack;
