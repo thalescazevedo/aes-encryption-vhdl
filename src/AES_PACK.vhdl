@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
+use work.roms_package.all;
 
 package AES_pack is
 
@@ -13,10 +14,16 @@ package AES_pack is
     
     function SubWord(input : word) return word; -- funcao que aplica a SBOX em cada byte da palavra (ex: [a0, a1, a2, a3] vira [SBOX[a0], SBOX[a1], SBOX[a2], SBOX[a3]])
 
+    function getWord(input : matriz_4x4; col : integer) return word; -- funcao que extrai uma palavra (coluna) da matriz (ex: getWord(matriz, 2) retorna a palavra formada pelos bytes da coluna 2 da matriz)
+
+    function setWord(input : matriz_4x4; col : integer; w : word) return matriz_4x4; -- funcao que insere uma palavra (coluna) na matriz (ex: setWord(matriz, 2, w) retorna a matriz com a coluna 2 substituida pelos bytes da palavra w)
+
+    function XorWord(a, b : word) return word; -- funcao que aplica o XOR entre duas palavras (ex: [a0, a1, a2, a3] XOR [b0, b1, b2, b3] vira [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3])
+
     function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4; -- funcao que converte o vetor para matriz,
         -- com a ressalva de que o preenchimento e feito por colunas
     
-    function xtime(b : std_logic_vector(7 downto 0)) return std_logic_vector; -- funcao de multiplicar por 2 e evitar overflow com xor (nicolas usa essa tambem)
+    function xtime(b : std_logic_vector(7 downto 0)) return std_logic_vector(7 downto 0); -- funcao de multiplicar por 2 e evitar overflow com xor (nicolas usa essa tambem)
     
     function matriz_4x4_to_128bits(input: matriz_4x4) return std_logic_vector(127 downto 0);
 
@@ -24,6 +31,34 @@ end package AES_pack;
 
 
 package body AES_pack is
+
+    function setWord(input : matriz_4x4; col : integer; w : word) return matriz_4x4 is
+        variable r : matriz_4x4;
+    begin
+        r := input;
+        for row in 0 to 3 loop
+            r(row, col) := w(row);
+        end loop;
+        return r;
+    end function setWord;
+
+    function getWord(input : matriz_4x4; col : integer) return word is
+        variable r : word;
+    begin
+        for row in 0 to 3 loop
+            r(row) := input(row, col);
+        end loop;
+        return r;
+    end function getWord;
+
+    function XorWord(a, b : word) return word is
+        variable output : word;
+    begin
+        for i in 0 to 3 loop
+            output(i) := a(i) xor b(i);
+        end loop;
+        return output;
+    end function;
 
     function RotWord(input : word) return word is
         variable output : word;
@@ -55,7 +90,7 @@ package body AES_pack is
         return output;
     end function;
 
-    function xtime(b : std_logic_vector(7 downto 0)) return std_logic_vector is
+    function xtime(b : std_logic_vector(7 downto 0)) return std_logic_vector(7 downto 0) is
         variable result : std_logic_vector(7 downto 0);
     begin
         result := b(6 downto 0) & '0';
