@@ -10,11 +10,12 @@ entity AES_BC is
 		clk        : in  std_logic;     -- clk
 		init       : in  std_logic;     -- iniciar
         rst_a      : in  std_logic;
+        aes_type   : in std_logic_vector(1 downto 0);
         done       : out std_logic;   
         -- para o bo --
         round_counter : out std_logic_vector(3 downto 0);
         rp            : out std_logic;      -- signal de ativaçao do registrador da matriz parcial
-        i10           : out std_logic;      -- diz que já está no round 10 ou nao
+        ilr           : out std_logic;      -- diz que já está no último round ou nao
         i0            : out std_logic      -- diz se está no round 0 ou nao
 	);
 end entity AES_BC;
@@ -25,9 +26,12 @@ architecture behavior of AES_BC is
     signal PEstado: estado;
     
     signal s_counter : unsigned(3 downto 0);
+    signal number_of_rounds : integer;
 begin
 
     round_counter <= std_logic_vector(s_counter);
+    number_of_rounds <= calc_nestados(aes_type);
+
 
  CRG: process (clk, rst_a)
     BEGIN
@@ -51,7 +55,7 @@ begin
         end if;
     end process;
         
-LPE: process (EAtual, init, s_counter)
+LPE: process (EAtual, init, s_counter, number_of_rounds)
     BEGIN
         CASE EAtual is
             when S0 =>
@@ -67,7 +71,7 @@ LPE: process (EAtual, init, s_counter)
                 PEstado <= Sverif;
             
             when Sverif =>
-                if s_counter <= 10 then
+                if s_counter <= number_of_rounds then
                     PEstado <= Scalc;
                 else PEstado <= Sresult;
                 end if;
@@ -80,13 +84,13 @@ LPE: process (EAtual, init, s_counter)
         end case;     
     end process;
     
-    LS: process (EAtual,s_counter)
+    LS: process (EAtual,s_counter,number_of_rounds)
     BEGIN
     
         rp      <= '0';
         done    <= '0';
         i0      <= '0';
-        i10     <= '0';
+        ilr     <= '0';
         
         CASE EAtual is
             when S0 => null;
@@ -97,8 +101,8 @@ LPE: process (EAtual, init, s_counter)
             
             when Scalc => 
                 rp <= '1';
-                if s_counter = 10 then
-                    i10 <= '1';
+                if s_counter = number_of_rounds then
+                    ilr <= '1';
                 end if;
             
             when Sverif => null;

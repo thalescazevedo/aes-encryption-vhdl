@@ -8,6 +8,10 @@ package AES_pack is
 
     type matriz_4x4 is array(0 to 3, 0 to 3) of std_logic_vector(7 downto 0); -- matriz de 4x4 bytes (128 bits)(16 bytes)
     
+    function calc_nestados(aes_type : std_logic_vector(1 downto 0)) return integer;
+
+end function;
+
     type word is array(0 to 3) of std_logic_vector(7 downto 0); -- tipo para representar uma palavra de 4 bytes (32 bits) (Linha da matriz)
 
     function RotWord(input : word) return word; -- funcao que rotaciona uma palavra para a esquerda (ex: [a0, a1, a2, a3] vira [a1, a2, a3, a0])
@@ -31,6 +35,20 @@ end package AES_pack;
 
 
 package body AES_pack is
+
+    function calc_nestados(aes_type : std_logic_vector(1 downto 0)) return integer is
+        begin
+            case aes_type is
+                when "00" => 
+                    return 10; -- AES-128
+                when "01" => 
+                    return 12; -- AES-192
+                when "10" => 
+                    return 14; -- AES-256
+                when others => 
+                    return 10; -- Fallback de segurança para evitar latches/erros
+            end case;
+    end function;
 
     function setWord(input : matriz_4x4; col : integer; w : word) return matriz_4x4 is
         variable r : matriz_4x4;

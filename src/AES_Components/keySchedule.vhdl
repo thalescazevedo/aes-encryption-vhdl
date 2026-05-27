@@ -12,6 +12,8 @@ entity keySchedule is
 	port(
         in_matrix       : in  matriz_4x4;
         round_counter   : in std_logic_vector(3 downto 0);
+        user_key        : in std_logic_vector(255 downto 0); -- passando a chave completa
+        aes_type        : in std_logic_vector(1 downto 0);
         out_matrix      : out  matriz_4x4
 	);
 end entity keySchedule;

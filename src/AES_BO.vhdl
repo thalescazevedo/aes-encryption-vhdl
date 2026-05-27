@@ -8,14 +8,15 @@ entity AES_BO is
 	port(
         -- toplevel--
 		clk        : in  std_logic;     -- clk
-		user_key   : in  std_logic_vector(127 downto 0); -- chave de 128 bits (16 bytes)(estamos fazendo AES-128, se fosse outros, devereriamos usar generic)
+		user_key   : in  std_logic_vector(255 downto 0); -- chave de 128 bits (16 bytes)(estamos fazendo AES-128, se fosse outros, devereriamos usar generic)
         user_text  : in  std_logic_vector(127 downto 0); -- texto plano de 128 bits
         cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
+        aes_type   : in  std_logic_vector(1 downto 0);
 
         -- bloco de controle --
         round_counter   : in std_logic_vector(3 downto 0);
         rp              : in std_logic;      -- signal de ativaçao do registrador da matriz parcial
-        i10             : in std_logic;      -- diz que já está no round 10 ou nao
+        ilr             : in std_logic;      -- diz que já está no ultimo round ou nao
         i0              : in std_logic      -- diz se está no round 0 ou nao
 	);
 end entity AES_BO;
@@ -37,7 +38,7 @@ architecture behavior of AES_BO is
 begin
 
     -- Primeiro passo: Colocar a primeira chave da rodada fazendo um xor entre user key e user text.
-    round0_cipher <= vetor128bits_to_matriz_4x4(user_key xor user_text);
+    round0_cipher <= vetor128bits_to_matriz_4x4(user_key(127 downto 0) xor user_text);
     
     SB: entity work.subBytes(behavior)
         port map (  in_matriz       => partial_cipher,
@@ -55,13 +56,13 @@ begin
         );
 
     M1: entity work.mux_2to1(behavior) -- mux que ve se esta na ultima rodada pra pular ou nao mix columns
-        port map (  sel         => i10,
+        port map (  sel         => ilr,
                     in_0        => partial_cipher_mixcolumns,
                     in_1        => partial_cipher_shiftrows,
                     y           => in_partial_cipher_addroundkey
         );
 
-    in_1_m2 <= vetor128bits_to_matriz_4x4(user_key);
+    in_1_m2 <= vetor128bits_to_matriz_4x4(user_key(127 downto 0));
 
     M2: entity work.mux_2to1(behavior) -- mux pra definir se a entrada de keySchedule é a chave da rodada anterior a ou a do usuario
         port map (  sel         => i0, 
@@ -80,6 +81,8 @@ begin
     KS: entity work.keySchedule(behavior) -- entra com a chave da ultima rodada, contador de rodada e devolve a nova chave de rodada
         port map (  in_matriz       => last_roundKey,
                     round_counter   => round_counter,
+                    user_key        => user_key, -- passando a chave completa
+                    aes_type        => aes_type, -- passando o tipo de aes
                     out_matriz      => roundKey
         );
 

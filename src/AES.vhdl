@@ -9,7 +9,8 @@ entity AES is
 		clk        : in  std_logic;     -- ck
 		rst_a      : in  std_logic;     -- reset
 		init       : in  std_logic;     -- iniciar
-		user_key   : in  std_logic_vector(127 downto 0); -- chave de 128 bits (16 bytes)(estamos fazendo AES-128, se fosse outros, devereriamos usar generic)
+        aes_type   : in  std_logic_vector(1 downto 0); -- 00 = aes 128, 01 = aes 192, 10 = aes 256, 11 = x
+		user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de compilacao
         user_text  : in  std_logic_vector(127 downto 0); -- texto plano de 128 bits
         cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
         done       : out std_logic      -- sinal de conclusão
@@ -20,10 +21,11 @@ architecture behavior of AES is
 
     signal s_round_counter : std_logic_vector(3 downto 0);
     signal s_rp            : std_logic;
-    signal s_i10           : std_logic;
+    signal s_ilr           : std_logic;
     signal s_i0            : std_logic;
 
 begin
+
 
     inst_AES_BC: entity work.AES_BC
         port map(
@@ -31,9 +33,10 @@ begin
             init          => init,
             rst_a         => rst_a,
             done          => done,
+            aes_type      => aes_type,
             round_counter => s_round_counter,
             rp            => s_rp,
-            i10           => s_i10,
+            ilr           => s_ilr,
             i0            => s_i0
         );
 
@@ -42,10 +45,11 @@ begin
             clk           => clk,
             user_key      => user_key,
             user_text     => user_text,
+            aes_type      => aes_type,
             cipher_text   => cipher_text,
             round_counter => s_round_counter,
             rp            => s_rp,
-            i10           => s_i10,
+            ilr           => s_ilr,
             i0            => s_i0
         );
 
