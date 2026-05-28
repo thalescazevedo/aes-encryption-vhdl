@@ -31,15 +31,17 @@ architecture behavior of AES_BO is
     signal roundKey                         : matriz_4x4;
     signal round_partial_cipher             : matriz_4x4;
     signal partial_cipher_addroundkey       : matriz_4x4;
-    signal last_roundKey_mux                : matriz_4x4;
-    signal last_roundKey                    : matriz_4x4;
-    signal in_1_m2                          : matriz_4x4;
+    signal key_in_matriz                    : matriz_4x4;
+    signal last_roundKey_mux                : std_logic_vector(255 downto 0);
+    signal last_roundKey                    : std_logic_vector(255 downto 0);
+    signal roundKey_bits                    : std_logic_vector(127 downto 0);
+    signal lrkey                            : std_logic_vector(255 downto 0);
 
 begin
 
     -- Primeiro passo: Colocar a primeira chave da rodada fazendo um xor entre user key e user text.
     round0_cipher <= vetor128bits_to_matriz_4x4(user_key(127 downto 0) xor user_text);
-    
+
     SB: entity work.subBytes(behavior)
         port map (  in_matriz       => partial_cipher,
                     out_matriz      => partial_cipher_subbytes
@@ -55,44 +57,52 @@ begin
                     out_matriz      => partial_cipher_mixcolumns
         );
 
-    M1: entity work.mux_2to1(behavior) -- mux que ve se esta na ultima rodada pra pular ou nao mix columns
+    M1: entity work.mux2x1(behavior) -- mux que ve se esta na ultima rodada pra pular ou nao mix columns
         port map (  sel         => ilr,
                     in_0        => partial_cipher_mixcolumns,
                     in_1        => partial_cipher_shiftrows,
                     y           => in_partial_cipher_addroundkey
         );
 
-    in_1_m2 <= vetor128bits_to_matriz_4x4(user_key(127 downto 0));
+    ------------- key schedule e afins    -------------------------------------------
 
-    M2: entity work.mux_2to1(behavior) -- mux pra definir se a entrada de keySchedule é a chave da rodada anterior a ou a do usuario
+    KS: entity work.keySchedule(behavior) -- entra com a chave da ultima rodada, contador de rodada e devolve a nova chave de rodada
+        port map (  round_counter   => round_counter,
+                    last_round_key  => last_roundKey,  -- chave do ultimo round
+                    aes_type        => aes_type,        -- passando o tipo de aes
+                    out_matrix      => roundKey         -- matriz que faz o xor no addRound
+        );
+    roundKey_bits <= matriz_4x4_to_128bits(roundKey);
+
+    LRK: entity work.LASTROUNDKEY(behavior) -- faz o chaveamento da saida de lr
+        port map (  aes_type    => aes_type,
+                    lrkey       => last_roundKey,    
+                    ksr         => roundKey_bits,                     
+                    new_lrkey   => lrkey
+        );
+
+    M2: entity work.mux2x1_stdlogic(behavior) -- mux pra definir se a entrada de keySchedule é a chave da rodada anterior a ou a do usuario
+        generic map( N => 256)
         port map (  sel         => i0, 
-                    in_0        => roundKey,
-                    in_1        => in_1_m2,
+                    in_0        => lrkey,
+                    in_1        => user_key,
                     y           => last_roundKey_mux
         );
 
-    RLK: entity work.matriz4x4_register(behavior) -- salva a chave da última rodada
+    RLK: entity work.n256bits_register(behavior) -- salva a chave da última rodada
         port map (  clk     => clk,
                     enable  => rp,
                     d       => last_roundKey_mux,
                     q       => last_roundKey
         );
-
-    KS: entity work.keySchedule(behavior) -- entra com a chave da ultima rodada, contador de rodada e devolve a nova chave de rodada
-        port map (  in_matriz       => last_roundKey,
-                    round_counter   => round_counter,
-                    user_key        => user_key, -- passando a chave completa
-                    aes_type        => aes_type, -- passando o tipo de aes
-                    out_matriz      => roundKey
-        );
-
+    key_in_matriz <= vetor128bits_to_matriz_4x4(last_roundKey_mux(127 downto 0));
     ARK: entity work.addRoundKey(behavior)
         port map (  in_matriz       => in_partial_cipher_addroundkey,
-                    in_keySchedule  => roundKey,
+                    in_keySchedule  => key_in_matriz,
                     out_matriz      => partial_cipher_addroundkey
         );
 
-    M0: entity work.mux_2to1(behavior) -- determina se o parcial é o xor do usuario ou o calculado
+    M0: entity work.mux2x1(behavior) -- determina se o parcial é o xor do usuario ou o calculado
         port map (  sel         => i0,
                     in_0        => partial_cipher_addroundkey,
                     in_1        => round0_cipher,

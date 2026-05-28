@@ -10,9 +10,10 @@ use work.roms_package.all; -- já está importando o pacote de roms
 entity keySchedule is
 
 	port(
-        in_matrix       : in  matriz_4x4;
         round_counter   : in std_logic_vector(3 downto 0);
-        user_key        : in std_logic_vector(255 downto 0); -- passando a chave completa
+        last_round_key  : in std_logic_vector(255 downto 0); -- chave do ultimo round completa. a depender do aes
+        -- r0 pra usar em r1: aes 128: (X,X,X,X,W3,W2,W1,W0), -- aes 192: (X,X,W5,W4,W3,W2,W1,W0), -- aes 256: (W7,W6,W5,W4,W3,W2,W1,W0)
+        -- r1 pra usar em r2: aes 128: (X,X,X,X,W7,W6,W5,W4), -- aes 192: (X,X,W9,W8,W7,W6,W5,W4), -- aes 256: (W11,W10,W9,W8,W7,W6,W5,W4)
         aes_type        : in std_logic_vector(1 downto 0);
         out_matrix      : out  matriz_4x4
 	);

@@ -21,7 +21,7 @@ entity AES_BC is
 end entity AES_BC;
 
 architecture behavior of AES_BC is
-    Type estado is (S0,S1,Scalc,Sverif,Sresult);
+    Type estado is (S0,S1,Scalc,Sresult);
     signal EAtual: estado;
     signal PEstado: estado;
     
@@ -43,12 +43,13 @@ begin
         elsif rising_edge(clk) then
             EAtual <= PEstado;
 
-            if EAtual = S0 then 
+            if PEstado = S0 then 
                 s_counter <= "0000";
-            elsif EAtual = S1 then
+
+            elsif PEstado = S1 then
                 s_counter <= "0001";
             
-            elsif EAtual = Scalc then
+            elsif PEstado = Scalc then
                 s_counter <= s_counter + 1;
             
             end if;
@@ -68,12 +69,10 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
                 PEstado <= Scalc;
             
             when Scalc =>
-                PEstado <= Sverif;
-            
-            when Sverif =>
                 if s_counter <= number_of_rounds then
                     PEstado <= Scalc;
-                else PEstado <= Sresult;
+                else
+                    PEstado <= Sresult; -- Acabou, vai pro resultado
                 end if;
             
             when Sresult => 
@@ -101,11 +100,9 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
             
             when Scalc => 
                 rp <= '1';
-                if s_counter = number_of_rounds then
+                if s_counter > number_of_rounds then
                     ilr <= '1';
                 end if;
-            
-            when Sverif => null;
             
             when Sresult => 
                 done <= '1';
