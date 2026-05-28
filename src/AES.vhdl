@@ -11,7 +11,7 @@ entity AES is
 		init       : in  std_logic;     -- iniciar
         aes_type   : in  std_logic_vector(1 downto 0); -- 00 = aes 128, 01 = aes 192, 10 = aes 256, 11 = x
 		user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de compilacao
-        user_text  : in  std_logic_vector(127 downto 0); -- texto plano de 128 bits
+        user_text  : in  std_logic_vector(127 downto 0); -- texto de 128 bits
         cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
         done       : out std_logic      -- sinal de conclusão
 	);

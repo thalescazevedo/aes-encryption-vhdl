@@ -43,14 +43,14 @@ begin
         elsif rising_edge(clk) then
             EAtual <= PEstado;
 
-            if PEstado = S0 then 
+            if EAtual = S0 then 
                 s_counter <= "0000";
 
-            elsif PEstado = S1 then
+            elsif EAtual = S1 then
                 s_counter <= "0001";
             
-            elsif PEstado = Scalc then
-                s_counter <= s_counter + 1;
+            elsif EAtual = Scalc then
+                s_counter <= s_counter + 1; 
             
             end if;
         end if;
@@ -69,7 +69,7 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
                 PEstado <= Scalc;
             
             when Scalc =>
-                if s_counter <= number_of_rounds then
+                if to_integer(s_counter) < number_of_rounds then
                     PEstado <= Scalc;
                 else
                     PEstado <= Sresult; -- Acabou, vai pro resultado
@@ -100,7 +100,7 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
             
             when Scalc => 
                 rp <= '1';
-                if s_counter > number_of_rounds then
+                if to_integer(s_counter) = number_of_rounds then
                     ilr <= '1';
                 end if;
             
