@@ -16,25 +16,25 @@ architecture behavior of addRoundKey is
 
 begin
 	-- coluna 0
-	out_matriz(0, 0) <= in_matriz(0, 0) xor round_key(0, 0);
-    out_matriz(1, 0) <= in_matriz(1, 0) xor round_key(1, 0);
-    out_matriz(2, 0) <= in_matriz(2, 0) xor round_key(2, 0);
-    out_matriz(3, 0) <= in_matriz(3, 0) xor round_key(3, 0);
+	out_matriz(0, 0) <= in_matriz(0, 0) xor in_keySchedule(0, 0);
+    out_matriz(1, 0) <= in_matriz(1, 0) xor in_keySchedule(1, 0);
+    out_matriz(2, 0) <= in_matriz(2, 0) xor in_keySchedule(2, 0);
+    out_matriz(3, 0) <= in_matriz(3, 0) xor in_keySchedule(3, 0);
 	-- coluna 1
-	out_matriz(0, 1) <= in_matriz(0, 1) xor round_key(0, 1);
-    out_matriz(1, 1) <= in_matriz(1, 1) xor round_key(1, 1);
-    out_matriz(2, 1) <= in_matriz(2, 1) xor round_key(2, 1);
-    out_matriz(3, 1) <= in_matriz(3, 1) xor round_key(3, 1);
+	out_matriz(0, 1) <= in_matriz(0, 1) xor in_keySchedule(0, 1);
+    out_matriz(1, 1) <= in_matriz(1, 1) xor in_keySchedule(1, 1);
+    out_matriz(2, 1) <= in_matriz(2, 1) xor in_keySchedule(2, 1);
+    out_matriz(3, 1) <= in_matriz(3, 1) xor in_keySchedule(3, 1);
 	-- coluna 2
-	out_matriz(0, 2) <= in_matriz(0, 2) xor round_key(0, 2);
-    out_matriz(1, 2) <= in_matriz(1, 2) xor round_key(1, 2);
-    out_matriz(2, 2) <= in_matriz(2, 2) xor round_key(2, 2);
-    out_matriz(3, 2) <= in_matriz(3, 2) xor round_key(3, 2);
+	out_matriz(0, 2) <= in_matriz(0, 2) xor in_keySchedule(0, 2);
+    out_matriz(1, 2) <= in_matriz(1, 2) xor in_keySchedule(1, 2);
+    out_matriz(2, 2) <= in_matriz(2, 2) xor in_keySchedule(2, 2);
+    out_matriz(3, 2) <= in_matriz(3, 2) xor in_keySchedule(3, 2);
 	--coluna 3
-	out_matriz(0, 3) <= in_matriz(0, 3) xor round_key(0, 3);
-    out_matriz(1, 3) <= in_matriz(1, 3) xor round_key(1, 3);
-    out_matriz(2, 3) <= in_matriz(2, 3) xor round_key(2, 3);
-    out_matriz(3, 3) <= in_matriz(3, 3) xor round_key(3, 3);
+	out_matriz(0, 3) <= in_matriz(0, 3) xor in_keySchedule(0, 3);
+    out_matriz(1, 3) <= in_matriz(1, 3) xor in_keySchedule(1, 3);
+    out_matriz(2, 3) <= in_matriz(2, 3) xor in_keySchedule(2, 3);
+    out_matriz(3, 3) <= in_matriz(3, 3) xor in_keySchedule(3, 3);
 
 
 end architecture behavior; 
