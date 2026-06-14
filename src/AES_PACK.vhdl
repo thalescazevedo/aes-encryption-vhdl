@@ -16,6 +16,8 @@ package AES_pack is
     
     function SubWord(input : word) return word; -- funcao que aplica a SBOX em cada byte da palavra (ex: [a0, a1, a2, a3] vira [SBOX[a0], SBOX[a1], SBOX[a2], SBOX[a3]])
 
+    function getKeyWord(key_vec : std_logic_vector(255 downto 0); word_index : integer; key_words : integer) return word; -- funcao que extrai uma palavra da chave completa respeitando a janela util de cada AES
+
     function getWord(input : matriz_4x4; col : integer) return word; -- funcao que extrai uma palavra (coluna) da matriz (ex: getWord(matriz, 2) retorna a palavra formada pelos bytes da coluna 2 da matriz)
 
     function setWord(input : matriz_4x4; col : integer; w : word) return matriz_4x4; -- funcao que insere uma palavra (coluna) na matriz (ex: setWord(matriz, 2, w) retorna a matriz com a coluna 2 substituida pelos bytes da palavra w)
@@ -94,6 +96,20 @@ package body AES_pack is
         end loop;
         return output;
     end function;
+
+    function getKeyWord(key_vec : std_logic_vector(255 downto 0); word_index : integer; key_words : integer) return word is
+        variable output : word;
+        variable base_bit : integer;
+    begin
+        -- A janela útil fica sempre nos bits menos significativos.
+        base_bit := (key_words - 1 - word_index) * 32 + 31;
+
+        for byte_index in 0 to 3 loop
+            output(byte_index) := key_vec(base_bit - byte_index * 8 downto base_bit - byte_index * 8 - 7);
+        end loop;
+
+        return output;
+    end function getKeyWord;
 
     function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4 is
         variable output : matriz_4x4;
