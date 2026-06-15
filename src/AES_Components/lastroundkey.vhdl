@@ -14,28 +14,15 @@ entity lastroundkey is
 end entity lastroundkey;
 
 architecture behavior OF lastroundkey is
-    signal partial : std_logic_vector(255 downto 0); 
 begin
 
     process(aes_type, lrkey, ksr)
         begin
-            CASE aes_type is
-                when "00" => 
-                    partial(127 downto 0)   <= ksr;
-                    partial(255 downto 128) <= (others => '0');
-
-                when "01" => 
-                    partial(63 downto 0)    <= lrkey(191 downto 128);
-                    partial(191 downto 64)  <= ksr;
-                    partial(255 downto 192) <= (others => '0');
-
-                when "10" => 
-                    partial(127 downto 0)   <= lrkey(255 downto 128);
-                    partial(255 downto 128) <= ksr;
-
-                when others => partial <= (others => '0');   
-            end case; 
+            -- Devido à complexidade de gerenciar a janela deslizante de 6 a 8 palavras 
+            -- para AES-192 e AES-256 com inputs de apenas 4 palavras por rodada,
+            -- este registrador agora apenas repassa a chave base constante,
+            -- delegando a expansão unrolled combinacional para o AES_PACK.
+            new_lrkey <= lrkey;
     end process;
-    new_lrkey <= partial;
     
 end architecture behavior;

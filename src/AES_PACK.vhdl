@@ -20,6 +20,8 @@ package AES_pack is
 
     function getWord(input : matriz_4x4; col : integer) return word; -- funcao que extrai uma palavra (coluna) da matriz (ex: getWord(matriz, 2) retorna a palavra formada pelos bytes da coluna 2 da matriz)
 
+    function expand_round_key(user_key : std_logic_vector(255 downto 0); aes_type : std_logic_vector(1 downto 0); round_idx : integer) return matriz_4x4;
+
     function setWord(input : matriz_4x4; col : integer; w : word) return matriz_4x4; -- funcao que insere uma palavra (coluna) na matriz (ex: setWord(matriz, 2, w) retorna a matriz com a coluna 2 substituida pelos bytes da palavra w)
 
     function XorWord(a, b : word) return word; -- funcao que aplica o XOR entre duas palavras (ex: [a0, a1, a2, a3] XOR [b0, b1, b2, b3] vira [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3])
@@ -101,8 +103,12 @@ package body AES_pack is
         variable output : word;
         variable base_bit : integer;
     begin
-        -- A janela útil fica sempre nos bits menos significativos.
-        base_bit := (key_words - 1 - word_index) * 32 + 31;
+        -- Mantem a coesao com o AES_BO que usa 127 downto 0 para a rodada 0 (W0 a W3)
+        if word_index < 4 then
+            base_bit := 127 - (word_index * 32);
+        else
+            base_bit := 255 - ((word_index - 4) * 32);
+        end if;
 
         for byte_index in 0 to 3 loop
             output(byte_index) := key_vec(base_bit - byte_index * 8 downto base_bit - byte_index * 8 - 7);
@@ -110,6 +116,60 @@ package body AES_pack is
 
         return output;
     end function getKeyWord;
+
+    function expand_round_key(user_key : std_logic_vector(255 downto 0); aes_type : std_logic_vector(1 downto 0); round_idx : integer) return matriz_4x4 is
+        type word_array is array (0 to 59) of word;
+        variable W : word_array;
+        variable temp : word;
+        variable rcon_idx : integer := 1;
+        variable out_mat : matriz_4x4;
+        variable nk : integer;
+        variable max_words : integer;
+        variable rcon_w : word;
+    begin
+        if aes_type = "01" then
+            nk := 6;
+        elsif aes_type = "10" then
+            nk := 8;
+        else
+            nk := 4;
+        end if;
+
+        max_words := (round_idx + 1) * 4;
+
+        -- Extrai a janela util da chave original para o inicio do array
+        for i in 0 to nk - 1 loop
+            W(i) := getKeyWord(user_key, i, 8); -- Consideramos sempre a janela máxima global no user_key
+        end loop;
+
+        rcon_idx := 1;
+        for i in 4 to 59 loop
+            -- Pula execucoes desnecessarias e trata limites dinamicos do loop
+            if i >= nk and i < max_words then
+                temp := W(i - 1);
+                if (i mod nk) = 0 then
+                    rcon_w(0) := RCON(rcon_idx);
+                    rcon_w(1) := x"00";
+                    rcon_w(2) := x"00";
+                    rcon_w(3) := x"00";
+                    temp := XorWord(SubWord(RotWord(temp)), rcon_w);
+                    rcon_idx := rcon_idx + 1;
+                elsif nk > 6 and (i mod nk) = 4 then
+                    temp := SubWord(temp);
+                end if;
+
+                W(i) := XorWord(W(i - nk), temp);
+            end if;
+        end loop;
+
+        -- Extrai as 4 palavras exatas da rodada solicitada
+        out_mat := (others => (others => x"00"));
+        for i in 0 to 3 loop
+            out_mat := setWord(out_mat, i, W(round_idx * 4 + i));
+        end loop;
+
+        return out_mat;
+    end function expand_round_key;
 
     function vetor128bits_to_matriz_4x4(input : std_logic_vector(127 downto 0)) return matriz_4x4 is
         variable output : matriz_4x4;
