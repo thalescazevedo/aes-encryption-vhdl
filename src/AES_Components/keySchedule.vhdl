@@ -68,10 +68,10 @@ process(last_round_key, round_counter, aes_type)
                 end case;
  
                 -- O índice de Rcon para a próxima rodada é a rodada atual + 1.
-        if to_integer(unsigned(round_counter)) < 10 then
+        if to_integer(unsigned(round_counter)) < 14 then
                 rcon_idx := to_integer(unsigned(round_counter)) + 1;
         else
-                rcon_idx := 10;
+                rcon_idx := 14;
         end if;
  
                 -- Monta a palavra de Rcon: somente o primeiro byte é diferente de zero.
