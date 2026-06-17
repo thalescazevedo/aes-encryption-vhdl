@@ -138,9 +138,11 @@ package body AES_pack is
         max_words := (round_idx + 1) * 4;
 
         -- Extrai a janela util da chave original para o inicio do array
-        for i in 0 to nk - 1 loop
-            W(i) := getKeyWord(user_key, i, 8); -- Consideramos sempre a janela máxima global no user_key
-        end loop;
+        for i in 0 to 7 loop
+				if i < nk then
+				  W(i) := getKeyWord(user_key, i, 8); 
+				end if;
+			end loop;
 
         rcon_idx := 1;
         for i in 4 to 59 loop
