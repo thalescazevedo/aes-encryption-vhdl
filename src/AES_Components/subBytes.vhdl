@@ -16,7 +16,12 @@ architecture behavior of subBytes is
 
 begin
 
---SBOX e RCON ja ta feito em Commons/roms_package
-
+        gen_subBytes_linhas: for i in 0 to 3 generate
+        begin
+                gen_subBytes_colunas: for j in 0 to 3 generate
+                begin
+                        out_matriz(i) <= SBOX(to_integer(unsigned(in_matriz(i, j))));
+                end generate gen_subBytes_colunas
+        end generate gen_subBytes_linhas;
 
 end architecture behavior; 
