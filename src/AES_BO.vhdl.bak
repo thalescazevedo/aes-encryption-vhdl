@@ -65,6 +65,7 @@ begin
         );
 
     ------------- key schedule e afins    -------------------------------------------
+
     KS: entity work.keySchedule(behavior) -- entra com a chave da ultima rodada, contador de rodada e devolve a nova chave de rodada
         port map (  round_counter   => round_counter,
                     last_round_key  => last_roundKey,  -- chave do ultimo round
@@ -97,11 +98,10 @@ begin
     key_in_matriz <= vetor128bits_to_matriz_4x4(last_roundKey_mux(127 downto 0));
     ARK: entity work.addRoundKey(behavior)
         port map (  in_matriz       => in_partial_cipher_addroundkey,
-                    in_keySchedule  => roundKey,
+                    in_keySchedule  => key_in_matriz,
                     out_matriz      => partial_cipher_addroundkey
         );
-	 
-	
+
     M0: entity work.mux2x1(behavior) -- determina se o parcial é o xor do usuario ou o calculado
         port map (  sel         => i0,
                     in_0        => partial_cipher_addroundkey,
