@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# GHDL compilation artifacts
+*.o
+work/
+work-obj*.cf
+e~*.o
+*.exe
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
