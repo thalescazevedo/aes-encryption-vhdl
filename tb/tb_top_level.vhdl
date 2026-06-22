@@ -21,7 +21,7 @@ begin
     port map(
         clk => clk, init => init, aes_type => aes_type, 
         user_key => user_key, user_text => user_text,
-        cipher_text => ciphertext, done => done
+        cipher_text => ciphertext, done => done, rst_a => rst_a
     );
     
     clk <= not clk after 5 ns;
@@ -38,7 +38,7 @@ begin
 
         user_text <= x"EF0C3A372EE59A8D198C18FB7F515E90";
 
-        user_key <= (127 downto 0 => '0') & x"66DFE13FBC51B9E42BA945D497B6ACF2", 256;
+        user_key <= (127 downto 0 => '0') & x"66DFE13FBC51B9E42BA945D497B6ACF2";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -53,14 +53,14 @@ begin
         report "Teste 1(AES-128) bem-sucedido" severity note;
         -- Teste 2(AES-128) -- 
 
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         user_text <= x"24624EAB44DBADD9EC1E4CE4B348284D";
 
-        user_key <= (127 downto 0 => '0') & x"2F276694B48725442420881363AFF7A0", 256;
+        user_key <= (127 downto 0 => '0') & x"2F276694B48725442420881363AFF7A0";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -75,14 +75,14 @@ begin
         report "Teste 2(AES-128) bem-sucedido" severity note;
         
         -- Teste 3(AES-128) -- 
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
         
         user_text <= x"0DFEC537C5193D9117D74B1A8CFF57CF";
 
-        user_key <= (127 downto 0 => '0') & x"F4175A430381DC93739118F85C4308DA", 256;
+        user_key <= (127 downto 0 => '0') & x"F4175A430381DC93739118F85C4308DA";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -102,17 +102,17 @@ begin
         ------------------------------------------------------------------
 
         -- Teste 1(AES-192) -- 
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "01";
 
         user_text <= x"517FCE781CC1F2FD4B93C07C2DC4416F";
 
         user_key <=
-        (63 downto 0 => '0') & x"AD44BBF2AE96494AE46F1CF0FEFB43395439A27770AF35CC", 256;
+        (63 downto 0 => '0') & x"AD44BBF2AE96494AE46F1CF0FEFB43395439A27770AF35CC";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -127,17 +127,17 @@ begin
          report "Teste 1(AES-192) bem-sucedido" severity note;
         
         -- Teste 2(AES-192) --
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "01";
 
         user_text <= x"FCC82875E6352A8927C54AA4A9841ACB";
 
         user_key <=
-         (63 downto 0 => '0') & x"413EB76C43996CEBB0CBBC3680B04CC9C983977321C0DB81", 256;
+         (63 downto 0 => '0') & x"413EB76C43996CEBB0CBBC3680B04CC9C983977321C0DB81";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -151,17 +151,17 @@ begin
 
         report "Teste 2(AES-192) bem-sucedido" severity note;
         -- Teste 3(AES-192)
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "01";
 
         user_text <= x"788644E650082A802ED148FD91BBD111";
 
         user_key <=
-        (63 downto 0 => '0') & x"3CD7A5ABD438333AC745BD8EA3CDEAD95A42FE0B6AFE274F", 256;
+        (63 downto 0 => '0') & x"3CD7A5ABD438333AC745BD8EA3CDEAD95A42FE0B6AFE274F";
 
         init <= '1';
         wait until rising_edge(clk);
@@ -180,10 +180,10 @@ begin
         ------------------------------------------------------------------
         
         -- Teste 1(AES-256) -- 
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "10";
 
@@ -205,10 +205,10 @@ begin
         report "Teste 1(AES-256) bem-sucedido" severity note;
 
         -- Teste 2(AES-256) --
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "10";
 
@@ -230,10 +230,10 @@ begin
         report "Teste 2(AES-256) bem-sucedido" severity note;
 
         -- Teste 3(AES-256) --
-        rst_a <= '1'
+        rst_a <= '1';
 
         wait until rising_edge(clk);
-        rst_a <= '0'
+        rst_a <= '0';
 
         aes_type <= "10";
 
