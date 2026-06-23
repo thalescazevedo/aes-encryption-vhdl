@@ -4,7 +4,9 @@
 ._*
 .Spotlight-V100
 .Trashes
-
+*.vcd
+*.ghw
+*.cf
 # GHDL compilation artifacts
 *.o
 work/

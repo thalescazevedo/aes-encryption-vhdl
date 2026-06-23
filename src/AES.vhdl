@@ -4,17 +4,16 @@ use ieee.numeric_std.all;
 use work.AES_pack.all;
 
 entity AES is
-
-	port(
-		clk        : in  std_logic;     -- ck
-		rst_a      : in  std_logic;     -- reset
-		init       : in  std_logic;     -- iniciar
+    port(
+        clk        : in  std_logic;     -- ck
+        rst_a      : in  std_logic;     -- reset
+        init       : in  std_logic;     -- iniciar
         aes_type   : in  std_logic_vector(1 downto 0); -- 00 = aes 128, 01 = aes 192, 10 = aes 256, 11 = x
-		user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de compilacao
+        user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de compilacao
         user_text  : in  std_logic_vector(127 downto 0); -- texto de 128 bits
-        cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
+        cipher_text: out std_logic_vector(127 downto 0); -- texto cifrado de 128 bits
         done       : out std_logic      -- sinal de conclusão
-	);
+    );
 end entity AES;
 
 architecture behavior of AES is
@@ -23,9 +22,9 @@ architecture behavior of AES is
     signal s_rp            : std_logic;
     signal s_ilr           : std_logic;
     signal s_i0            : std_logic;
+    signal s_load_init     : std_logic; -- NOVO SINAL INTERNO PARA A CHAVE MESTRE
 
 begin
-
 
     inst_AES_BC: entity work.AES_BC
         port map(
@@ -37,12 +36,14 @@ begin
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
-            i0            => s_i0
+            i0            => s_i0,
+            load_init     => s_load_init -- SAÍDA DO CONTROLE
         );
 
     inst_AES_BO: entity work.AES_BO
         port map(
             clk           => clk,
+            rst_a         => rst_a,
             user_key      => user_key,
             user_text     => user_text,
             aes_type      => aes_type,
@@ -50,7 +51,8 @@ begin
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
-            i0            => s_i0
+            i0            => s_i0,
+            load_init     => s_load_init -- ENTRADA DO DATAPATH (VAI PARA O KEY_REGISTER)
         );
 
 end architecture behavior;

@@ -4,38 +4,37 @@ use ieee.numeric_std.all;
 use work.AES_pack.all;
 
 entity AES_BC is
-
-	port(
-        -- top level--
-		clk        : in  std_logic;     -- clk
-		init       : in  std_logic;     -- iniciar
-        rst_a      : in  std_logic;
-        aes_type   : in std_logic_vector(1 downto 0);
-        done       : out std_logic;   
+    port(
+        -- top level --
+        clk           : in  std_logic;      -- clk
+        init          : in  std_logic;      -- iniciar
+        rst_a         : in  std_logic;
+        aes_type      : in  std_logic_vector(1 downto 0);
+        done          : out std_logic;   
+        
         -- para o bo --
         round_counter : out std_logic_vector(3 downto 0);
-        rp            : out std_logic;      -- signal de ativaçao do registrador da matriz parcial
-        ilr           : out std_logic;      -- diz que já está no último round ou nao
-        i0            : out std_logic      -- diz se está no round 0 ou nao
-	);
+        rp            : out std_logic;      
+        ilr           : out std_logic;      
+        i0            : out std_logic;      
+        load_init     : out std_logic       
+    );
 end entity AES_BC;
 
 architecture behavior of AES_BC is
-    Type estado is (S0,S1,Scalc,Sresult);
-    signal EAtual: estado;
-    signal PEstado: estado;
+    Type estado is (S0, S1, Scalc, Sresult);
+    signal EAtual  : estado := S0;
+    signal PEstado : estado := S0;
     
-    signal s_counter : unsigned(3 downto 0);
-    signal number_of_rounds : integer;
+    signal s_counter : unsigned(3 downto 0) := (others => '0');
+    signal number_of_rounds : integer := 10;
 begin
 
     round_counter <= std_logic_vector(s_counter);
     number_of_rounds <= calc_nestados(aes_type);
 
-
- CRG: process (clk, rst_a)
+    CRG: process (clk, rst_a)
     BEGIN
-    
         if rst_a = '1' then
             EAtual <= S0;
             s_counter <= "0000";
@@ -50,19 +49,22 @@ begin
                 s_counter <= "0001";
             
             elsif EAtual = Scalc then
-                s_counter <= s_counter + 1; 
+                if to_integer(s_counter) < number_of_rounds then
+                    s_counter <= s_counter + 1;
+                end if;
             
             end if;
         end if;
     end process;
         
-LPE: process (EAtual, init, s_counter, number_of_rounds)
+    LPE: process (EAtual, init, s_counter, number_of_rounds)
     BEGIN
         CASE EAtual is
             when S0 =>
                 if init = '1' then
                     PEstado <= S1;
-                else PEstado <= s0;
+                else 
+                    PEstado <= S0;
                 END IF;
             
             when S1 =>
@@ -72,7 +74,7 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
                 if to_integer(s_counter) < number_of_rounds then
                     PEstado <= Scalc;
                 else
-                    PEstado <= Sresult; -- Acabou, vai pro resultado
+                    PEstado <= Sresult; 
                 end if;
             
             when Sresult => 
@@ -80,23 +82,25 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
             
             when others => 
                 PEstado <= S0;
-        end case;     
+        end case;    
     end process;
     
-    LS: process (EAtual,s_counter,number_of_rounds)
+    LS: process (EAtual, s_counter, number_of_rounds)
     BEGIN
-    
-        rp      <= '0';
-        done    <= '0';
-        i0      <= '0';
-        ilr     <= '0';
+        rp        <= '0';
+        done      <= '0';
+        i0        <= '0';
+        ilr       <= '0';
+        load_init <= '0'; 
         
         CASE EAtual is
-            when S0 => null;
+            when S0 => 
+                load_init <= '1';
             
             when S1 => 
                 i0 <= '1';
                 rp <= '1';
+                load_init <= '1'; -- A CORREÇÃO ESTÁ AQUI! Segura a chave na Rodada 0.
             
             when Scalc => 
                 rp <= '1';
@@ -109,8 +113,5 @@ LPE: process (EAtual, init, s_counter, number_of_rounds)
                
         end case;    
     end process;
-    
 
-end architecture behavior; 
-
-
+end architecture behavior;

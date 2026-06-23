@@ -4,21 +4,22 @@ use ieee.numeric_std.all;
 use work.AES_pack.all;
 
 entity AES_BO is
-
-	port(
+    port(
         -- toplevel--
-		clk        : in  std_logic;     -- clk
-		user_key   : in  std_logic_vector(255 downto 0); -- chave de 128 bits (16 bytes)(estamos fazendo AES-128, se fosse outros, devereriamos usar generic)
-        user_text  : in  std_logic_vector(127 downto 0); -- texto plano de 128 bits
-        cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
-        aes_type   : in  std_logic_vector(1 downto 0);
+        clk         : in  std_logic;     -- clk
+        rst_a       : in  std_logic;     -- reset assíncrono
+        user_key    : in  std_logic_vector(255 downto 0); 
+        user_text   : in  std_logic_vector(127 downto 0); 
+        cipher_text : out std_logic_vector(127 downto 0);  
+        aes_type    : in  std_logic_vector(1 downto 0);
+        load_init   : in  std_logic;     -- Vem do Bloco de Controle
 
         -- bloco de controle --
         round_counter   : in std_logic_vector(3 downto 0);
-        rp              : in std_logic;      -- signal de ativaçao do registrador da matriz parcial
-        ilr             : in std_logic;      -- diz que já está no ultimo round ou nao
-        i0              : in std_logic      -- diz se está no round 0 ou nao
-	);
+        rp              : in std_logic;      
+        ilr             : in std_logic;      
+        i0              : in std_logic       
+    );
 end entity AES_BO;
 
 architecture behavior of AES_BO is
@@ -31,11 +32,11 @@ architecture behavior of AES_BO is
     signal roundKey                         : matriz_4x4;
     signal round_partial_cipher             : matriz_4x4;
     signal partial_cipher_addroundkey       : matriz_4x4;
-    signal key_in_matriz                    : matriz_4x4;
-    signal last_roundKey_mux                : std_logic_vector(255 downto 0);
-    signal last_roundKey                    : std_logic_vector(255 downto 0);
+    
+    -- Sinais de gerenciamento da chave limpos
+    signal current_key_state                : std_logic_vector(255 downto 0); 
+    signal ks_next_state                    : std_logic_vector(255 downto 0); 
     signal roundKey_bits                    : std_logic_vector(127 downto 0);
-    signal lrkey                            : std_logic_vector(255 downto 0);
 
 begin
 
@@ -57,67 +58,58 @@ begin
                     out_matriz      => partial_cipher_mixcolumns
         );
 
-    M1: entity work.mux2x1(behavior) -- mux que ve se esta na ultima rodada pra pular ou nao mix columns
+    M1: entity work.mux2x1(behavior) 
         port map (  sel         => ilr,
                     in_0        => partial_cipher_mixcolumns,
                     in_1        => partial_cipher_shiftrows,
                     y           => in_partial_cipher_addroundkey
         );
 
-    ------------- key schedule e afins    -------------------------------------------
-    KS: entity work.keySchedule(behavior) -- entra com a chave da ultima rodada, contador de rodada e devolve a nova chave de rodada
-        port map (  round_counter   => round_counter,
-                    last_round_key  => last_roundKey,  -- chave do ultimo round
-                    aes_type        => aes_type,        -- passando o tipo de aes
-                    out_matrix      => roundKey         -- matriz que faz o xor no addRound
+    ------------- key schedule e afins  -------------------------------------------
+    
+    KS: entity work.keySchedule(behavior) 
+        port map (  
+            round_counter   => round_counter,
+            last_round_key  => current_key_state, -- Usa a chave armazenada atualmente
+            aes_type        => aes_type,        
+            out_matrix      => roundKey,         
+            next_state      => ks_next_state 
         );
+
     roundKey_bits <= matriz_4x4_to_128bits(roundKey);
 
-    LRK: entity work.LASTROUNDKEY(behavior) -- faz o chaveamento da saida de lr
-        port map (  aes_type    => aes_type,
-                    lrkey       => last_roundKey,    
-                    ksr         => roundKey_bits,                     
-                    new_lrkey   => lrkey
+    -- Instanciação do registrador síncrono de hardware (Substitui M2 e RLK)
+    LRK: entity work.key_register(behavior) 
+        port map (  
+            clk         => clk,            
+            rst         => rst_a,          -- Ligado ao reset correto
+            load_init   => load_init,      -- Sinal vindo do BC
+            init_key    => user_key,       -- A chave injetada de fora
+            next_state  => ks_next_state,  -- O cálculo da próxima rodada vindo do KS
+            lrkey       => current_key_state -- Saída alimenta o KS no próximo clock
         );
 
-    M2: entity work.mux2x1_stdlogic(behavior) -- mux pra definir se a entrada de keySchedule é a chave da rodada anterior a ou a do usuario
-        generic map( N => 256)
-        port map (  sel         => i0, 
-                    in_0        => lrkey,
-                    in_1        => user_key,
-                    y           => last_roundKey_mux
-        );
-
-    RLK: entity work.n256bits_register(behavior) -- salva a chave da última rodada
-        port map (  clk     => clk,
-                    enable  => rp,
-                    d       => last_roundKey_mux,
-                    q       => last_roundKey
-        );
-    key_in_matriz <= vetor128bits_to_matriz_4x4(last_roundKey_mux(127 downto 0));
     ARK: entity work.addRoundKey(behavior)
         port map (  in_matriz       => in_partial_cipher_addroundkey,
                     in_keySchedule  => roundKey,
                     out_matriz      => partial_cipher_addroundkey
         );
-	 
-	
-    M0: entity work.mux2x1(behavior) -- determina se o parcial é o xor do usuario ou o calculado
+        
+    M0: entity work.mux2x1(behavior) 
         port map (  sel         => i0,
                     in_0        => partial_cipher_addroundkey,
                     in_1        => round0_cipher,
                     y           => round_partial_cipher
         );
 
-    RN: entity work.matriz4x4_register(behavior) -- salva o partial cipher da rodada
+    RN: entity work.matriz4x4_register(behavior) 
         port map (  clk     => clk,
+                    rst_a   => rst_a,
                     enable  => rp,
                     d       => round_partial_cipher,
                     q       => partial_cipher
         );
 
     cipher_text <= matriz_4x4_to_128bits(partial_cipher);
-    
 
-
-end architecture behavior; 
+end architecture behavior;
