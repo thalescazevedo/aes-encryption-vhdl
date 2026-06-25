@@ -12,6 +12,8 @@ package AES_pack is
 
     type word is array(0 to 3) of std_logic_vector(7 downto 0); -- tipo para representar uma palavra de 4 bytes (32 bits) (Linha da matriz)
 
+    type allKeys is array(0 to 59) of word;
+
     function RotWord(input : word) return word; -- funcao que rotaciona uma palavra para a esquerda (ex: [a0, a1, a2, a3] vira [a1, a2, a3, a0])
     
     function SubWord(input : word) return word; -- funcao que aplica a SBOX em cada byte da palavra (ex: [a0, a1, a2, a3] vira [SBOX[a0], SBOX[a1], SBOX[a2], SBOX[a3]])
@@ -46,7 +48,7 @@ package body AES_pack is
                 when "10" => 
                     return 14; -- AES-256
                 when others => 
-                    return 10; -- Fallback de segurança para evitar latches/erros
+                    return 10; 
             end case;
     end function;
 

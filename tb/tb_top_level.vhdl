@@ -46,7 +46,7 @@ begin
         -- Teste 1 (AES-128) -- 
         aes_type  <= "00";
         user_text <= x"EF0C3A372EE59A8D198C18FB7F515E90";
-        user_key  <= (127 downto 0 => '0') & x"66DFE13FBC51B9E42BA945D497B6ACF2";
+        user_key  <= x"66DFE13FBC51B9E42BA945D497B6ACF2" & (127 downto 0 => '0');
 
         init <= '1';
         wait until rising_edge(clk);
@@ -65,7 +65,7 @@ begin
         rst_a <= '0';
 
         user_text <= x"24624EAB44DBADD9EC1E4CE4B348284D";
-        user_key  <= (127 downto 0 => '0') & x"2F276694B48725442420881363AFF7A0";
+        user_key  <= x"2F276694B48725442420881363AFF7A0" & (127 downto 0 => '0');
 
         init <= '1';
         wait until rising_edge(clk);
@@ -84,7 +84,7 @@ begin
         rst_a <= '0';
         
         user_text <= x"0DFEC537C5193D9117D74B1A8CFF57CF";
-        user_key  <= (127 downto 0 => '0') & x"F4175A430381DC93739118F85C4308DA";
+        user_key  <= x"F4175A430381DC93739118F85C4308DA" & (127 downto 0 => '0');
 
         init <= '1';
         wait until rising_edge(clk);
@@ -96,6 +96,26 @@ begin
         assert ciphertext = x"00989E03A085CCCFD5D960459F17E582"
         report "Falha AES-128 (Teste 3)" severity error;
         report "Teste 3 (AES-128) bem-sucedido" severity note;
+
+
+        -- Teste 4 (AES-128) MODELO FIPS --
+        rst_a <= '1';
+        wait until rising_edge(clk);
+        rst_a <= '0';
+        
+        user_text <= x"00112233445566778899aabbccddeeff";
+        user_key  <= x"000102030405060708090a0b0c0d0e0f" & (127 downto 0 => '0');
+
+        init <= '1';
+        wait until rising_edge(clk);
+        init <= '0';
+
+        wait until done = '1';
+        wait until rising_edge(clk);
+
+        assert ciphertext = x"69c4e0d86a7b0430d8cdb78070b4c55a"
+        report "Falha AES-128 (Teste 4)" severity error;
+        report "Teste 4 (AES-128) bem-sucedido" severity note;
 
         ------------------------------------------------------------------
         -- AES-192
@@ -161,6 +181,25 @@ begin
         report "Falha AES-192 (Teste 3)" severity error;
         report "Teste 3 (AES-192) bem-sucedido" severity note;
 
+        -- Teste 4 (AES-192) MODELO FIPS --
+        rst_a <= '1';
+        wait until rising_edge(clk);
+        rst_a <= '0';
+        
+        user_text <= x"00112233445566778899aabbccddeeff";
+        user_key  <= x"000102030405060708090a0b0c0d0e0f1011121314151617"  & (63 downto 0 => '0');
+
+        init <= '1';
+        wait until rising_edge(clk);
+        init <= '0';
+
+        wait until done = '1';
+        wait until rising_edge(clk);
+
+        assert ciphertext = x"dda97ca4864cdfe06eaf70a0ec0d7191"
+        report "Falha AES-192 (Teste 4)" severity error;
+        report "Teste 4 (AES-192) bem-sucedido este é o unico que ta configurado certo pro aes192" severity note;
+
         ------------------------------------------------------------------
         -- AES-256
         ------------------------------------------------------------------
@@ -225,6 +264,26 @@ begin
         report "Falha AES-256 (Teste 3)" severity error;
         report "Teste 3 (AES-256) bem-sucedido" severity note; 
 
+        -- Teste 4 (AES-256) MODELO FIPS --
+        rst_a <= '1';
+        wait until rising_edge(clk);
+        rst_a <= '0';
+
+        aes_type  <= "10";
+        user_text <= x"00112233445566778899aabbccddeeff";
+        user_key  <= x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+
+        init <= '1';
+        wait until rising_edge(clk);
+        init <= '0';
+
+        wait until done = '1';
+        wait until rising_edge(clk);
+
+        assert ciphertext = x"8ea2b7ca516745bfeafc49904b496089"
+        report "Falha AES-256 (Teste 4)" severity error;
+        report "Teste 4 (AES-256) bem-sucedido" severity note; 
+        
         report "TODOS OS TESTES PASSARAM";
         wait;
     end process;
