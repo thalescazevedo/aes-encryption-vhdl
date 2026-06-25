@@ -22,7 +22,6 @@ architecture behavior of AES is
     signal s_rp            : std_logic;
     signal s_ilr           : std_logic;
     signal s_i0            : std_logic;
-    signal s_load_init     : std_logic; -- NOVO SINAL INTERNO PARA A CHAVE MESTRE
 
 begin
 
@@ -37,7 +36,6 @@ begin
             rp            => s_rp,
             ilr           => s_ilr,
             i0            => s_i0,
-            load_init     => s_load_init -- SAÍDA DO CONTROLE
         );
 
     inst_AES_BO: entity work.AES_BO
@@ -46,13 +44,12 @@ begin
             rst_a         => rst_a,
             user_key      => user_key,
             user_text     => user_text,
-            aes_type      => aes_type,
             cipher_text   => cipher_text,
+            aes_type      => aes_type,
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
             i0            => s_i0,
-            load_init     => s_load_init -- ENTRADA DO DATAPATH (VAI PARA O KEY_REGISTER)
         );
 
 end architecture behavior;

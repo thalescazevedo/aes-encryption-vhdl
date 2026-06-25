@@ -11,26 +11,40 @@ entity AES_BO_KEYEXPANSION is
         rst_a       : in  std_logic;     -- reset assíncrono
         user_key    : in  std_logic_vector(255 downto 0);  
         aes_type    : in  std_logic_vector(1 downto 0);
-        load_init   : in  std_logic;     -- Vem do Bloco de Controle, autoriza este BO a funcionar e fazer o calculo.
+        i0          : in  std_logic;     -- Vem do Bloco de Controle, autoriza este BO a funcionar e fazer o calculo.
         allRoundKeysOut : out allKeys
     );
 end entity AES_BO_KEYEXPANSION;
 
 architecture behavior of AES_BO_KEYEXPANSION is
 
+    signal in_keyExpansion   :      std_logic_vector(255 downto 0);
     signal saida_keyExpansion:      allkeys;
 
 BEGIN
 
+    process(clk, rst_a) -- esse process serve pra só afetivar o calculo do keyExpansion quando estivermos no estado S0!
+    begin
+        if rst_a = '1' then
+            in_keyExpansion <= (others => '0');
+        elsif rising_edge(clk) then
+            if i0 = '1' then
+                in_keyExpansion <= user_key;
+            end if;
+        end if;
+    end process;
+
 
     CALC: entity work.keyExpansionThales(behavior)
-        port map (  
+        port map (  in_keyExpansion => in_keyExpansion, 
+                    aes_type        => aes_type,
+                    out_keys => saida_keyExpansion
 
         );
 
     REGI: entity work.keys_register(behavior)
         port map(   clk => clk, 
-                    enable => load_init,
+                    enable => i0,
 		            rst_a => rst_a, 
 		            d => saida_keyExpansion,  
 		            q => allRoundKeysOut   

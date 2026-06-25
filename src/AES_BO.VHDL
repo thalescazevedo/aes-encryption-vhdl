@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.AES_pack.all;
 
-entity AES_BO_GERAL is
+entity AES_BO is
     port(
         -- toplevel--
         clk         : in  std_logic;     -- clk
@@ -12,7 +12,6 @@ entity AES_BO_GERAL is
         user_text   : in  std_logic_vector(127 downto 0); 
         cipher_text : out std_logic_vector(127 downto 0);  
         aes_type    : in  std_logic_vector(1 downto 0);
-        load_init   : in  std_logic;     -- Vem do Bloco de Controle
 
         -- bloco de controle --
         round_counter   : in std_logic_vector(3 downto 0);
@@ -20,9 +19,9 @@ entity AES_BO_GERAL is
         ilr             : in std_logic;      
         i0              : in std_logic       
     );
-end entity AES_BO_GERAL;
+end entity AES_BO;
 
-architecture behavior of AES_BO_GERAL is
+architecture behavior of AES_BO is
 
     signal allRoundKeys : allkeys;
 
@@ -34,7 +33,7 @@ BEGIN
             rst_a           => rst_a,
             user_key        => user_key,  
             aes_type        => aes_type,
-            load_init       => load_init,   
+            i0              => i0,   
             allRoundKeysOut => allRoundKeys            
         );
 

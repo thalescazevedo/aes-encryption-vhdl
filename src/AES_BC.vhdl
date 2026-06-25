@@ -17,7 +17,7 @@ entity AES_BC is
         rp            : out std_logic;      
         ilr           : out std_logic;      
         i0            : out std_logic;      
-        load_init     : out std_logic       
+
     );
 end entity AES_BC;
 
@@ -91,16 +91,13 @@ begin
         done      <= '0';
         i0        <= '0';
         ilr       <= '0';
-        load_init <= '0'; 
         
         CASE EAtual is
-            when S0 => 
-                load_init <= '1';
+            when S0 => null;
             
             when S1 => 
                 i0 <= '1';
                 rp <= '1';
-                load_init <= '1'; -- A CORREÇÃO ESTÁ AQUI! Segura a chave na Rodada 0.
             
             when Scalc => 
                 rp <= '1';
