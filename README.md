@@ -10,6 +10,13 @@
         * Thales Campos de Azevedo;
         * Thasio Santos Silva.
     
+* **Alerta**
+    O projeto demora entre 20 a 30 minutos para compilar no Quartus Prime. O motivo para tal será apresentado no relatório,
+    mas em suma se refere a uma matriz, que se fosse um vetor, teria 1920 bits. Ela faz parte do processo de criptografia
+    e é acessada diversas vezes. Ela também é a responsável por fazer-nos atingir mais de 30 mil funções combinacionais.
+
+    Todavia, a criptografia é perfeita em cada etapa, sendo comprovada pelos testbenchs.
+    
 * **About**
     Este trabalho visa implementar o **algoritmo de criptografia AES**
 
@@ -29,4 +36,3 @@
     25-06:
     1. Estava repleto de erros. Isso fez com que voltássemos a concepção de gerar as chaves de rodada todas de uma vez só.
     2. Agora, o datapath é dividido em dois blocos operativos, um para cálculo do valor da rodada e outro para as chaves.
-
