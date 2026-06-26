@@ -103,12 +103,8 @@ package body AES_pack is
         variable output : word;
         variable base_bit : integer;
     begin
-        -- Mantem a coesao com o AES_BO que usa 127 downto 0 para a rodada 0 (W0 a W3)
-        if word_index < 4 then
-            base_bit := 127 - (word_index * 32);
-        else
-            base_bit := 255 - ((word_index - 4) * 32);
-        end if;
+
+        base_bit := 255 - (word_index * 32);
 
         for byte_index in 0 to 3 loop
             output(byte_index) := key_vec(base_bit - byte_index * 8 downto base_bit - byte_index * 8 - 7);

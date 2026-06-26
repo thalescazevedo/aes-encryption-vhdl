@@ -7,34 +7,14 @@ entity addRoundKey is
 
 	port(
         in_matriz         : in      matriz_4x4;
-        in_keySchedule    : in      allKeys;
-        in_currentRound   : in      std_logic_vector(3 downto 0);
+        keySchedule       : in      matriz_4x4;
         out_matriz        : out     matriz_4x4
 	);
 end entity addRoundKey;
 
 architecture behavior of addRoundKey is
 
-    signal keySchedule          : matriz_4x4;
-    signal primeiraWord         : integer;
-    signal currentRoundInteger  : integer;
 begin
-    -- Selecao apenas das words necessarias --
-
-    currentRoundInteger <= to_integer(unsigned(in_currentRound));
-    primeiraWord        <= currentRoundInteger*4;
-
-    process(in_keySchedule, primeiraWord)
-            variable temp_matriz : matriz_4x4;
-        begin
-            temp_matriz := setWord(temp_matriz, 0, in_keySchedule(primeiraWord));
-            temp_matriz := setWord(temp_matriz, 1, in_keySchedule(primeiraWord+1));
-            temp_matriz := setWord(temp_matriz, 2, in_keySchedule(primeiraWord+2));
-            temp_matriz := setWord(temp_matriz, 3, in_keySchedule(primeiraWord+3));
-            
-            keySchedule <= temp_matriz;
-        end process;
-
     ------------------------------------------------------------
     -- XOR do add round key
     ------------------------------------------------------------

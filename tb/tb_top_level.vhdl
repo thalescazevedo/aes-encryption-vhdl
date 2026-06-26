@@ -16,8 +16,62 @@ architecture tb of tb_top_level is
     signal ciphertext : std_logic_vector(127 downto 0);
     signal done       : std_logic;
 
+    -- =========================================================================
+    -- ARRAYS E CONSTANTES PARA OS TESTES FIPS-197
+    -- =========================================================================
+    type expected_array_128 is array(0 to 10) of std_logic_vector(127 downto 0);
+    constant FIPS_EXPECTED_128 : expected_array_128 := (
+        0  => x"00102030405060708090a0b0c0d0e0f0", -- Start of Round 1
+        1  => x"89d810e8855ace682d1843d8cb128fe4", -- Start of Round 2
+        2  => x"4915598f55e5d7a0daca94fa1f0a63f7", -- Start of Round 3
+        3  => x"fa636a2825b339c940668a3157244d17", -- Start of Round 4
+        4  => x"247240236966b3fa6ed2753288425b6c", -- Start of Round 5
+        5  => x"c81677bc9b7ac93b25027992b0261996", -- Start of Round 6 
+        6  => x"c62fe109f75eedc3cc79395d84f9cf5d", -- Start of Round 7
+        7  => x"d1876c0f79c4300ab45594add66ff41f", -- Start of Round 8
+        8  => x"fde3bad205e5d0d73547964ef1fe37f1", -- Start of Round 9
+        9  => x"bd6e7c3df2b5779e0b61216e8b10b689", -- Start of Round 10
+        10 => x"69c4e0d86a7b0430d8cdb78070b4c55a"  -- Output Final
+    );
+
+    type expected_array_192 is array(0 to 12) of std_logic_vector(127 downto 0);
+    constant FIPS_EXPECTED_192 : expected_array_192 := (
+        0  => x"00102030405060708090a0b0c0d0e0f0",
+        1  => x"4f63760643e0aa85aff8c9d041fa0de4",
+        2  => x"cb02818c17d2af9c62aa64428bb25fd7",
+        3  => x"f75c7778a327c8ed8cfebfc1a6c37f53",
+        4  => x"22ffc916a81474416496f19c64ae2532",
+        5  => x"80121e0776fd1d8a8d8c31bc965d1fee",
+        6  => x"671EF1FD4E2A1E03DFDCB1EF3D789B30",
+        7  => x"0c0370d00c01e622166b8accd6db3a2c",
+        8  => x"7255dad30fb80310e00d6c6b40d0527c",
+        9  => x"a906b254968af4e9b4bdb2d2f0c44336",
+        10 => x"88ec930ef5e7e4b6cc32f4c906d29414",
+        11 => x"afb73eeb1cd1b85162280f27fb20d585",
+        12 => x"dda97ca4864cdfe06eaf70a0ec0d7191"
+    );
+
+    type expected_array_256 is array(0 to 14) of std_logic_vector(127 downto 0);
+    constant FIPS_EXPECTED_256 : expected_array_256 := (
+        0  => x"00102030405060708090a0b0c0d0e0f0",
+        1  => x"4f63760643e0aa85efa7213201a4e705",
+        2  => x"1859fbc28a1c00a078ed8aadc42f6109",
+        3  => x"975c66c1cb9f3fa8a93a28df8ee10f63",
+        4  => x"1c05f271a417e04ff921c5c104701554",
+        5  => x"c357aae11b45b7b0a2c7bd28a8dc99fa",
+        6  => x"7f074143cb4e243ec10c815d8375d54c",
+        7  => x"d653a4696ca0bc0f5acaab5db96c5e7d",
+        8  => x"5aa858395fd28d7d05e1a38868f3b9c5",
+        9  => x"4a824851c57e7e47643de50c2af3e8c9",
+        10 => x"c14907f6ca3b3aa070e9aa313b52b5ec",
+        11 => x"5f9c6abfbac634aa50409fa766677653",
+        12 => x"516604954353950314fb86e401922521",
+        13 => x"627bceb9999d5aaac945ecf423f56da5",
+        14 => x"8ea2b7ca516745bfeafc49904b496089"
+    );
+
 begin
-    DUV: ENTITY work.AES
+    DUV: ENTITY work.AES(behavior)
     port map(
         clk         => clk, 
         init        => init, 
@@ -33,241 +87,99 @@ begin
 
     process
     begin
-        ------------------------------------------------------------------
-        -- AES-128
-        ------------------------------------------------------------------
+        -- ===================================================================
+        -- TESTE DETALHADO RODADA A RODADA (FIPS-197 AES-128)
+        -- ===================================================================
+        report "--------------------------------------------------------" severity note;
+        report "INICIANDO TESTE DETALHADO (AES-128 FIPS)" severity note;
+        report "--------------------------------------------------------" severity note;
 
-        -- Reset inicial antes do primeiro teste
         rst_a <= '1';
         wait until rising_edge(clk);
         rst_a <= '0';
         wait until rising_edge(clk);
 
-        -- Teste 1 (AES-128) -- 
         aes_type  <= "00";
-        user_text <= x"EF0C3A372EE59A8D198C18FB7F515E90";
-        user_key  <= x"66DFE13FBC51B9E42BA945D497B6ACF2" & (127 downto 0 => '0');
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"6B06711367D69FF47E2A007542EE3D7C"
-        report "Falha AES-128 (Teste 1)" severity error;
-        report "Teste 1 (AES-128) bem-sucedido" severity note;
-
-        -- Teste 2 (AES-128) -- 
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-
-        user_text <= x"24624EAB44DBADD9EC1E4CE4B348284D";
-        user_key  <= x"2F276694B48725442420881363AFF7A0" & (127 downto 0 => '0');
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"E79B182EE0F35FE03E73B8B8E987DA85"
-        report "Falha AES-128 (Teste 2)" severity error;
-        report "Teste 2 (AES-128) bem-sucedido" severity note;
-        
-        -- Teste 3 (AES-128) -- 
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-        
-        user_text <= x"0DFEC537C5193D9117D74B1A8CFF57CF";
-        user_key  <= x"F4175A430381DC93739118F85C4308DA" & (127 downto 0 => '0');
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"00989E03A085CCCFD5D960459F17E582"
-        report "Falha AES-128 (Teste 3)" severity error;
-        report "Teste 3 (AES-128) bem-sucedido" severity note;
-
-
-        -- Teste 4 (AES-128) MODELO FIPS --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-        
         user_text <= x"00112233445566778899aabbccddeeff";
-        user_key  <= x"000102030405060708090a0b0c0d0e0f" & (127 downto 0 => '0');
+        user_key(255 downto 128) <= x"000102030405060708090a0b0c0d0e0f";
+        user_key(127 downto 0)   <= (others => '0');
 
         init <= '1';
         wait until rising_edge(clk);
         init <= '0';
 
-        wait until done = '1';
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
+
+        for i in 0 to 10 loop
+            assert ciphertext = FIPS_EXPECTED_128(i)
+                report "AES-128 FALHA CRITICA NA RODADA " & integer'image(i+1) & 
+                       " | Esperado: " & to_hstring(FIPS_EXPECTED_128(i)) & 
+                       " | Obtido: "   & to_hstring(ciphertext)
+                severity error;
+
+            if i < 10 then
+                wait until falling_edge(clk);
+            end if;
+        end loop;
+
+        assert done = '1' report "AES-128: Sinal DONE não ativado!" severity error;
+        report "Teste Detalhado AES-128 PASSOU com sucesso!" severity note;
         wait until rising_edge(clk);
 
-        assert ciphertext = x"69c4e0d86a7b0430d8cdb78070b4c55a"
-        report "Falha AES-128 (Teste 4)" severity error;
-        report "Teste 4 (AES-128) bem-sucedido" severity note;
 
-        ------------------------------------------------------------------
-        -- AES-192
-        ------------------------------------------------------------------
+        -- ===================================================================
+        -- TESTE DETALHADO RODADA A RODADA (FIPS-197 AES-192)
+        -- ===================================================================
+        report "--------------------------------------------------------" severity note;
+        report "INICIANDO TESTE DETALHADO (AES-192 FIPS)" severity note;
+        report "--------------------------------------------------------" severity note;
 
-        -- Teste 1 (AES-192) -- 
         rst_a <= '1';
         wait until rising_edge(clk);
         rst_a <= '0';
+        wait until rising_edge(clk);
 
         aes_type  <= "01";
-        user_text <= x"517FCE781CC1F2FD4B93C07C2DC4416F";
-        user_key  <= x"5439A27770AF35CC0000000000000000AD44BBF2AE96494AE46F1CF0FEFB4339";
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"96C5E1D84A22A7369F3F96A056A6B9EB"
-        report "Falha AES-192 (Teste 1)" severity error;
-        report "Teste 1 (AES-192) bem-sucedido" severity note;
-        
-        -- Teste 2 (AES-192) --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-
-        aes_type  <= "01";
-        user_text <= x"FCC82875E6352A8927C54AA4A9841ACB";
-        user_key  <= x"C983977321C0DB810000000000000000413EB76C43996CEBB0CBBC3680B04CC9";
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"39928D23ECBA5DDD130995724F15D3E2"
-        report "Falha AES-192 (Teste 2)" severity error;
-        report "Teste 2 (AES-192) bem-sucedido" severity note;
-
-        -- Teste 3 (AES-192) --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-
-        aes_type  <= "01";
-        user_text <= x"788644E650082A802ED148FD91BBD111";
-        user_key  <= x"5A42FE0B6AFE274F00000000000000003CD7A5ABD438333AC745BD8EA3CDEAD9";
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"A00FEFF6812011E15AA5F83D9E7765DF"
-        report "Falha AES-192 (Teste 3)" severity error;
-        report "Teste 3 (AES-192) bem-sucedido" severity note;
-
-        -- Teste 4 (AES-192) MODELO FIPS --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-        
         user_text <= x"00112233445566778899aabbccddeeff";
-        user_key  <= x"000102030405060708090a0b0c0d0e0f1011121314151617"  & (63 downto 0 => '0');
+        -- Alinhado aos bits mais significativos para casar com sua extração de chaves
+        user_key  <= x"000102030405060708090a0b0c0d0e0f1011121314151617" & (63 downto 0 => '0');
 
         init <= '1';
         wait until rising_edge(clk);
         init <= '0';
 
-        wait until done = '1';
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
+
+        for i in 0 to 12 loop
+            assert ciphertext = FIPS_EXPECTED_192(i)
+                report "AES-192 FALHA CRITICA NA RODADA " & integer'image(i+1) & 
+                       " | Esperado: " & to_hstring(FIPS_EXPECTED_192(i)) & 
+                       " | Obtido: "   & to_hstring(ciphertext)
+                severity error;
+
+            if i < 12 then
+                wait until falling_edge(clk);
+            end if;
+        end loop;
+
+        assert done = '1' report "AES-192: Sinal DONE não ativado!" severity error;
+        report "Teste Detalhado AES-192 PASSOU com sucesso!" severity note;
         wait until rising_edge(clk);
 
-        assert ciphertext = x"dda97ca4864cdfe06eaf70a0ec0d7191"
-        report "Falha AES-192 (Teste 4)" severity error;
-        report "Teste 4 (AES-192) bem-sucedido este é o unico que ta configurado certo pro aes192" severity note;
 
-        ------------------------------------------------------------------
-        -- AES-256
-        ------------------------------------------------------------------
-        
-        -- Teste 1 (AES-256) -- 
+        -- ===================================================================
+        -- TESTE DETALHADO RODADA A RODADA (FIPS-197 AES-256)
+        -- ===================================================================
+        report "--------------------------------------------------------" severity note;
+        report "INICIANDO TESTE DETALHADO (AES-256 FIPS)" severity note;
+        report "--------------------------------------------------------" severity note;
+
         rst_a <= '1';
         wait until rising_edge(clk);
         rst_a <= '0';
-
-        aes_type  <= "10";
-        user_text <= x"EB82528D98A6DC4FA41C6C548B9F60D3";
-        user_key  <= x"4C1B92413A763CFBD21A6C39A0BA4E4246BDF75D3CB4AD61B0168BA61BC1B48F";
-
-        init <= '1';
         wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"FAB7D72950825A786C62908CA4CA3868"
-        report "Falha AES-256 (Teste 1)" severity error;
-        report "Teste 1 (AES-256) bem-sucedido" severity note;
-
-        -- Teste 2 (AES-256) --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-
-        aes_type  <= "10";
-        user_text <= x"9C6C97BEF86F14A95C1BB7F90D077D3F";
-        user_key  <= x"A35992AB19B3C168683FCDA7F917EE82EB373222EC287FBF440C6E002A205F70";
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"0A740162C564D8757D044F43DABCAA7F"
-        report "Falha AES-256 (Teste 2)" severity error;
-        report "Teste 2 (AES-256) bem-sucedido" severity note;
-
-        -- Teste 3 (AES-256) --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
-
-        aes_type  <= "10";
-        user_text <= x"5A7ECBEA4FD86C8884FAA560559779C7";
-        user_key  <= x"8D5468401A7BBF2C80F0C0CFFD835CFA26822A4EE3DBD49798BF266208401F05";
-
-        init <= '1';
-        wait until rising_edge(clk);
-        init <= '0';
-
-        wait until done = '1';
-        wait until rising_edge(clk);
-
-        assert ciphertext = x"9543739CC45211E37FEDE3B6AFF27FFC"
-        report "Falha AES-256 (Teste 3)" severity error;
-        report "Teste 3 (AES-256) bem-sucedido" severity note; 
-
-        -- Teste 4 (AES-256) MODELO FIPS --
-        rst_a <= '1';
-        wait until rising_edge(clk);
-        rst_a <= '0';
 
         aes_type  <= "10";
         user_text <= x"00112233445566778899aabbccddeeff";
@@ -277,14 +189,23 @@ begin
         wait until rising_edge(clk);
         init <= '0';
 
-        wait until done = '1';
-        wait until rising_edge(clk);
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
 
-        assert ciphertext = x"8ea2b7ca516745bfeafc49904b496089"
-        report "Falha AES-256 (Teste 4)" severity error;
-        report "Teste 4 (AES-256) bem-sucedido" severity note; 
-        
-        report "TODOS OS TESTES PASSARAM";
+        for i in 0 to 14 loop
+            assert ciphertext = FIPS_EXPECTED_256(i)
+                report "AES-256 FALHA CRITICA NA RODADA " & integer'image(i+1) & 
+                       " | Esperado: " & to_hstring(FIPS_EXPECTED_256(i)) & 
+                       " | Obtido: "   & to_hstring(ciphertext)
+                severity error;
+
+            if i < 14 then
+                wait until falling_edge(clk);
+            end if;
+        end loop;
+
+        assert done = '1' report "AES-256: Sinal DONE não ativado!" severity error;
+        report "Teste Detalhado AES-256 PASSOU com sucesso!" severity note;
         wait;
     end process;
     

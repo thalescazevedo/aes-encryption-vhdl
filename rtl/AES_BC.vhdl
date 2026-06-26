@@ -16,7 +16,7 @@ entity AES_BC is
         round_counter : out std_logic_vector(3 downto 0);
         rp            : out std_logic;      
         ilr           : out std_logic;      
-        i0            : out std_logic;      
+        i0            : out std_logic      
 
     );
 end entity AES_BC;

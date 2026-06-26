@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.AES_pack.all;
+use work.roms_package.all;
 
 entity AES_BO_CRIPTOGRAFIA is
     port(
@@ -29,7 +30,9 @@ architecture behavior of AES_BO_CRIPTOGRAFIA is
     signal in_partial_cipher_addroundkey    : matriz_4x4;
     signal round_partial_cipher             : matriz_4x4;
     signal partial_cipher_addroundkey       : matriz_4x4;
-    
+    signal atual_round_key                  : matriz_4x4;
+    signal primeiraWord                     : integer := 0;
+    signal currentRoundInteger              : integer := 0;
 
 begin
 
@@ -58,10 +61,34 @@ begin
                     y           => in_partial_cipher_addroundkey
         );
 
+
+    --------------------------------------------------------------------
+    --          selecionando apenas a chave da rodada                 --
+    --------------------------------------------------------------------
+
+    currentRoundInteger <= to_integer(unsigned(round_counter));
+    primeiraWord        <= currentRoundInteger*4;
+
+    process(allRoundKeys, primeiraWord)
+        variable temp_matriz : matriz_4x4;
+        variable idx : integer;
+    begin
+        idx := primeiraWord;
+        if idx < 0 or idx > 56 then  
+            idx := 0;
+        end if;
+
+        temp_matriz := setWord(temp_matriz, 0, allRoundKeys(idx));
+        temp_matriz := setWord(temp_matriz, 1, allRoundKeys(idx+1));
+        temp_matriz := setWord(temp_matriz, 2, allRoundKeys(idx+2));
+        temp_matriz := setWord(temp_matriz, 3, allRoundKeys(idx+3));
+
+        atual_round_key <= temp_matriz;
+    end process;
+
     ARK: entity work.addRoundKey(behavior)
         port map (  in_matriz       => in_partial_cipher_addroundkey,
-                    in_keySchedule  => allroundKeys,
-                    in_currentRound => round_counter,
+                    keySchedule     => atual_round_key, -- mexi aqui
                     out_matriz      => partial_cipher_addroundkey
         );
     

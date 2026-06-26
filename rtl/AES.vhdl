@@ -25,7 +25,7 @@ architecture behavior of AES is
 
 begin
 
-    inst_AES_BC: entity work.AES_BC
+    inst_AES_BC: entity work.AES_BC(behavior)
         port map(
             clk           => clk,
             init          => init,
@@ -35,10 +35,10 @@ begin
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
-            i0            => s_i0,
+            i0            => s_i0
         );
 
-    inst_AES_BO: entity work.AES_BO
+    inst_AES_BO: entity work.AES_BO(behavior)
         port map(
             clk           => clk,
             rst_a         => rst_a,
@@ -49,7 +49,7 @@ begin
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
-            i0            => s_i0,
+            i0            => s_i0
         );
 
 end architecture behavior;
