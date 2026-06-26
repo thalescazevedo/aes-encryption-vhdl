@@ -26,3 +26,7 @@
     2. Até o momento da entrega 2, a princípio, o código já está completo, faltando testá-lo em um compilador e 
     criar os Testbenchs.
 
+    25-06:
+    1. Estava repleto de erros. Isso fez com que voltássemos a concepção de gerar as chaves de rodada todas de uma vez só.
+    2. Agora, o datapath é dividido em dois blocos operativos, um para cálculo do valor da rodada e outro para as chaves.
+
