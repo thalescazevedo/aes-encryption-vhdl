@@ -11,6 +11,7 @@ entity AES_BO_KEYEXPANSION is
         rst_a       : in  std_logic;     -- reset assíncrono
         user_key    : in  std_logic_vector(255 downto 0);  
         aes_type    : in  std_logic_vector(1 downto 0);
+        i0          : in  std_logic;
         allRoundKeysOut : out allKeys
     );
 end entity AES_BO_KEYEXPANSION;

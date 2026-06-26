@@ -32,7 +32,8 @@ BEGIN
             clk             => clk,      
             rst_a           => rst_a,
             user_key        => user_key,  
-            aes_type        => aes_type,  
+            aes_type        => aes_type,
+            i0              => i0,  
             allRoundKeysOut => allRoundKeys            
         );
 
