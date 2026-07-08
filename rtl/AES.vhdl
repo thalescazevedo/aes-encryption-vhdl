@@ -4,17 +4,16 @@ use ieee.numeric_std.all;
 use work.AES_pack.all;
 
 entity AES is
-
-	port(
-		clk        : in  std_logic;     -- ck
-		rst_a      : in  std_logic;     -- reset
-		init       : in  std_logic;     -- iniciar
+    port(
+        clk        : in  std_logic;     -- ck
+        rst_a      : in  std_logic;     -- reset
+        init       : in  std_logic;     -- iniciar
         aes_type   : in  std_logic_vector(1 downto 0); -- 00 = aes 128, 01 = aes 192, 10 = aes 256, 11 = x
-		user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de compilacao
+        user_key   : in  std_logic_vector(255 downto 0); -- 255 pra suportar os 3 aes em tempo de execucao entra sempre com as words na frente: wwww0000, wwwwww00, wwwwwwww.
         user_text  : in  std_logic_vector(127 downto 0); -- texto de 128 bits
-        cipher_text: out std_logic_vector(127 downto 0);  -- texto cifrado de 128 bits
+        cipher_text: out std_logic_vector(127 downto 0); -- texto cifrado de 128 bits
         done       : out std_logic      -- sinal de conclusão
-	);
+    );
 end entity AES;
 
 architecture behavior of AES is
@@ -26,8 +25,7 @@ architecture behavior of AES is
 
 begin
 
-
-    inst_AES_BC: entity work.AES_BC
+    inst_AES_BC: entity work.AES_BC(behavior)
         port map(
             clk           => clk,
             init          => init,
@@ -40,13 +38,14 @@ begin
             i0            => s_i0
         );
 
-    inst_AES_BO: entity work.AES_BO
+    inst_AES_BO: entity work.AES_BO(behavior)
         port map(
             clk           => clk,
+            rst_a         => rst_a,
             user_key      => user_key,
             user_text     => user_text,
-            aes_type      => aes_type,
             cipher_text   => cipher_text,
+            aes_type      => aes_type,
             round_counter => s_round_counter,
             rp            => s_rp,
             ilr           => s_ilr,
